@@ -1,0 +1,1987 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIDAI - 高端AI视频生成平台</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- GSAP 动画库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#D4AF37', // 金色
+                        secondary: '#1E1E1E', // 深黑色
+                        accent: '#0066CC', // 科技蓝
+                        dark: '#0A0A0A', // 纯黑
+                        light: '#F5F5F5', // 浅灰
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    boxShadow: {
+                        'gold': '0 0 15px rgba(212, 175, 55, 0.5)',
+                        'gold-lg': '0 0 30px rgba(212, 175, 55, 0.3)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-gold {
+                color: #D4AF37;
+            }
+            .bg-gold {
+                background-color: #D4AF37;
+            }
+            .border-gold {
+                border-color: #D4AF37;
+            }
+            .text-shadow-gold {
+                text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+            }
+            .bg-gradient-gold {
+                background: linear-gradient(135deg, #D4AF37 0%, #F0E68C 50%, #D4AF37 100%);
+            }
+            .bg-gradient-dark {
+                background: linear-gradient(135deg, #0A0A0A 0%, #1E1E1E 100%);
+            }
+            .premium-text {
+                background: linear-gradient(to bottom, #ffffff, #D4AF37, #ffffff);
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+                position: relative;
+            }
+            .premium-text::after {
+                content: attr(data-text);
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(
+                    90deg, 
+                    transparent 0%, 
+                    rgba(255, 255, 255, 0.4) 50%, 
+                    transparent 100%
+                );
+                background-size: 200% 100%;
+                background-position: 100% 0;
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+                animation: shimmer 3s infinite;
+            }
+            @keyframes shimmer {
+                0% { background-position: 100% 0; }
+                100% { background-position: -100% 0; }
+            }
+            .glass-effect {
+                background: rgba(255, 255, 255, 0.05);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .golden-border {
+                position: relative;
+            }
+            .golden-border::before {
+                content: '';
+                position: absolute;
+                top: -2px;
+                left: -2px;
+                right: -2px;
+                bottom: -2px;
+                background: linear-gradient(45deg, #D4AF37, #F0E68C, #D4AF37, #F0E68C);
+                border-radius: inherit;
+                z-index: -1;
+                animation: border-animate 4s linear infinite;
+            }
+            @keyframes border-animate {
+                0% { background-position: 0 0; }
+                50% { background-position: 300% 0; }
+                100% { background-position: 0 0; }
+            }
+        }
+    </style>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0A0A;
+            color: #F5F5F5;
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .dynamic-island {
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .drawer {
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .drawer-backdrop {
+            transition: opacity 0.3s ease;
+        }
+        
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .model-card {
+            transition: all 0.3s ease;
+        }
+        
+        .model-card:hover {
+            transform: scale(1.02);
+        }
+        
+        .transition-line {
+            transition: left 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .transition-image {
+            transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .fixed-image {
+            transition: opacity 0.5s ease;
+        }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1E1E1E;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #D4AF37;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #F0E68C;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="fixed top-0 left-0 right-0 z-40 bg-dark/80 backdrop-blur-sm">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="#" class="text-2xl font-bold text-gold">
+                        VIDAI
+                    </a>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="text-light hover:text-gold transition-colors">功能</a>
+                    <a href="#canvas" class="text-light hover:text-gold transition-colors">画布</a>
+                    <a href="#models" class="text-light hover:text-gold transition-colors">模型</a>
+                </div>
+                <div>
+                    <button class="px-6 py-2 bg-gold text-dark font-semibold rounded-full hover:shadow-lg transition-all duration-300">
+                        开始创作
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section class="relative h-screen flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <img src="https://p6-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/937e564d2d614724be4fa128eabb1d93~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=20260508163616328ED7BE9C769C6DB0AA&rrcfp=f06b921b&x-expires=1780821533&x-signature=gc0gkcpFUAx%2Fw%2FUx9iQGhOiuuMk2E%3D" 
+                 alt="VIDAI 英雄图" 
+                 class="w-full h-full object-cover opacity-40">
+        </div>
+        <div class="container mx-auto px-6 z-10 text-center">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6">
+                VIDAI
+            </h1>
+            <p class="text-xl md:text-2xl mb-12 max-w-2xl mx-auto text-gray-300">
+                简单、强大的AI视频生成平台
+            </p>
+            <button class="px-8 py-4 bg-gold text-dark font-semibold rounded-full hover:shadow-gold-lg transition-all duration-300 text-lg">
+                立即开始创作
+            </button>
+        </div>
+    </section>
+
+    <!-- 功能特性区域 -->
+    <section id="features" class="py-20 bg-gradient-dark">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                    核心功能
+                </h2>
+                <p class="text-lg text-gray-300 max-w-2xl mx-auto">
+                    简单易用的AI视频生成工具，满足您的创作需求
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 文字生视频 -->
+                <div class="feature-card bg-dark/50 rounded-xl p-6 border border-gold/20">
+                    <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-file-text-o text-xl text-dark"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gold">文字生视频</h3>
+                    <p class="text-gray-300">
+                        输入文字描述，AI生成符合您想象的视频内容。
+                    </p>
+                </div>
+                
+                <!-- 图片生视频 -->
+                <div class="feature-card bg-dark/50 rounded-xl p-6 border border-gold/20">
+                    <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-picture-o text-xl text-dark"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gold">图片生视频</h3>
+                    <p class="text-gray-300">
+                        上传图片，AI为静态图像注入动态生命力。
+                    </p>
+                </div>
+                
+                <!-- 视频编辑 -->
+                <div class="feature-card bg-dark/50 rounded-xl p-6 border border-gold/20">
+                    <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-film text-xl text-dark"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gold">视频编辑</h3>
+                    <p class="text-gray-300">
+                        简单易用的视频编辑工具，快速调整和优化您的视频。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 无限画布区域 -->
+    <section id="canvas" class="py-20 bg-gradient-dark">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                    无限画布
+                </h2>
+                <p class="text-lg text-gray-300 max-w-2xl mx-auto">
+                    在自由的画布上释放您的创意，像搭积木一样创作视频
+                </p>
+            </div>
+            
+            <!-- 画布工具栏 -->
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <button id="zoom-out-btn" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-white hover:bg-gold hover:text-dark transition-colors">
+                            <i class="fa fa-minus"></i>
+                        </button>
+                        <span id="scale-display" class="text-lg font-mono bg-gray-800 px-4 py-2 rounded-lg">100%</span>
+                        <button id="zoom-in-btn" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center text-white hover:bg-gold hover:text-dark transition-colors">
+                            <i class="fa fa-plus"></i>
+                        </button>
+                    </div>
+                    <button id="reset-view-btn" class="px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gold hover:text-dark transition-colors">
+                        重置视图
+                    </button>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <button id="add-text-btn" class="px-4 py-2 bg-gold text-dark rounded-lg hover:shadow-lg transition-all flex items-center">
+                            <i class="fa fa-font mr-2"></i> 文本
+                        </button>
+                        <button id="add-image-btn" class="px-4 py-2 bg-gold text-dark rounded-lg hover:shadow-lg transition-all flex items-center">
+                            <i class="fa fa-image mr-2"></i> 图片
+                        </button>
+                        <button id="add-video-btn" class="px-4 py-2 bg-gold text-dark rounded-lg hover:shadow-lg transition-all flex items-center">
+                            <i class="fa fa-film mr-2"></i> 视频
+                        </button>
+                    </div>
+                    <button id="generate-video-btn" class="px-6 py-2 bg-gold text-dark font-semibold rounded-lg hover:shadow-gold-lg transition-all">
+                        生成视频
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 无限画布容器 -->
+            <div class="relative h-[70vh] bg-dark/50 rounded-xl overflow-hidden border border-gold/20">
+                <!-- 画布视口 -->
+                <div id="canvas-viewport" class="absolute inset-0 bg-gray-900 cursor-grab">
+                    <!-- 无限画布 -->
+                    <div id="canvas-world" class="absolute" style="transform-origin: 0 0; transform: translate(0, 0) scale(1);">
+                        <!-- 网格背景 -->
+                        <div class="absolute inset-0 bg-[linear-gradient(rgba(212,175,55,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(212,175,55,0.1)_1px,transparent_1px)] bg-[size:20px_20px] w-[4000px] h-[4000px]"></div>
+                        
+                        <!-- 中心提示 -->
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/10 p-8 rounded-lg border border-gold/30 text-center">
+                            <p class="text-white mb-4">开始您的创作</p>
+                            <p class="text-gray-400 text-sm">双击添加节点 · 拖拽移动画布 · 滚轮缩放</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 画布信息 -->
+                <div class="absolute bottom-4 left-4 glass-effect px-4 py-2 rounded-lg text-sm">
+                    <span id="canvas-info">坐标: (0, 0) | 缩放: 100%</span>
+                </div>
+            </div>
+            
+            <!-- 节点类型说明 -->
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-dark/50 rounded-xl p-6 border border-gold/20">
+                    <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-file-text-o text-xl text-dark"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gold">文本节点</h3>
+                    <p class="text-gray-300">添加文本内容，可作为视频脚本或字幕</p>
+                </div>
+                
+                <div class="bg-dark/50 rounded-xl p-6 border border-gold/20">
+                    <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-picture-o text-xl text-dark"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gold">图片节点</h3>
+                    <p class="text-gray-300">上传或生成图片，作为视频素材</p>
+                </div>
+                
+                <div class="bg-dark/50 rounded-xl p-6 border border-gold/20">
+                    <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-film text-xl text-dark"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gold">视频节点</h3>
+                    <p class="text-gray-300">上传或生成视频片段</p>
+                </div>
+                
+                <div class="bg-dark/50 rounded-xl p-6 border border-gold/20">
+                    <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center mb-4">
+                        <i class="fa fa-music text-xl text-dark"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gold">音频节点</h3>
+                    <p class="text-gray-300">添加背景音乐或音效</p>
+                </div>
+            </div>
+        </div>
+    </section>
+            
+            <!-- AI模型接入区域 -->
+    <section id="models" class="py-20 bg-gradient-dark">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">
+                    AI模型支持
+                </h2>
+                <p class="text-lg text-gray-300 max-w-2xl mx-auto">
+                    集成多种先进的AI模型，为您的创作提供强大支持
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-dark/50 rounded-xl p-6 border border-gold/20">
+                    <h3 class="text-xl font-bold mb-4 text-gold">图像生成</h3>
+                    <p class="text-gray-300 mb-4">
+                        支持多种先进的图像生成模型，创造精美视觉内容。
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-2 py-1 bg-gray-800 rounded-full text-xs text-white">Stable Diffusion</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded-full text-xs text-white">Midjourney</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded-full text-xs text-white">DALL·E</span>
+                    </div>
+                </div>
+                
+                <div class="bg-dark/50 rounded-xl p-6 border border-gold/20">
+                    <h3 class="text-xl font-bold mb-4 text-gold">视频生成</h3>
+                    <p class="text-gray-300 mb-4">
+                        强大的视频生成模型，轻松创建专业级视频内容。
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-2 py-1 bg-gray-800 rounded-full text-xs text-white">Sora</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded-full text-xs text-white">通义万相</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded-full text-xs text-white">Runway Gen-2</span>
+                    </div>
+                </div>
+                
+                <div class="bg-dark/50 rounded-xl p-6 border border-gold/20">
+                    <h3 class="text-xl font-bold mb-4 text-gold">音频生成</h3>
+                    <p class="text-gray-300 mb-4">
+                        高质量音频生成模型，为您的视频添加完美音效。
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="px-2 py-1 bg-gray-800 rounded-full text-xs text-white">Index-TTS</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded-full text-xs text-white">MeloTTS</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded-full text-xs text-white">MusicGen</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 滚动转场效果区域 -->
+    <section class="relative h-[300vh]" id="transition-container">
+        <div class="sticky top-0 h-screen overflow-hidden">
+            <!-- 重叠的三张图片，通过z-index控制层级 -->
+            <img src="https://p6-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/de41d0f17c7048ffa0f9bf836b12d8c3~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=20260508163616328ED7BE9C769C6DB0AA&rrcfp=f06b921b&x-expires=1780821412&x-signature=IrSzHSMowOH4VCpwL9oX4QRHodk%3D" 
+                 alt="VIDAI 界面" 
+                 class="absolute inset-0 w-full h-full object-cover object-center z-30 transition-image" 
+                 id="image1">
+            <img src="https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/f902d413d9964163ad13a21760f8afe2~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=20260508163616328ED7BE9C769C6DB0AA&rrcfp=f06b921b&x-expires=1780821452&x-signature=VsQSTC595Dnz48dNs%2FbwymRvBrM%3D" 
+                 alt="VIDAI 视频展示" 
+                 class="absolute inset-0 w-full h-full object-cover object-center z-20 transition-image" 
+                 id="image2">
+            <img src="https://p6-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/c1d379406d6946dcb58cff90173c3f6a~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=20260508163616328ED7BE9C769C6DB0AA&rrcfp=f06b921b&x-expires=1780821506&x-signature=7JKWD2cXXzzEaV6ZdEHqMS2Kk4U%3D" 
+                 alt="VIDAI AI模型" 
+                 class="absolute inset-0 w-full h-full object-cover object-center z-10 transition-image" 
+                 id="image3">
+          
+            <!-- 转场分隔线 -->
+            <div class="absolute top-0 bottom-0 w-0.5 bg-gold z-40 transition-line" id="transition-line"></div>
+            
+            <!-- 转场文字内容 -->
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 text-center text-white">
+                <div class="glass-effect px-10 py-6 rounded-xl">
+                    <h3 class="text-3xl font-bold mb-4 premium-text" data-text="无缝创作体验">无缝创作体验</h3>
+                    <p class="text-lg">从界面到输出，VIDAI 提供端到端的优质体验</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 固定与滚动混合布局区域 -->
+    <section id="showcase" class="flex min-h-[300vh]">
+        <!-- 左侧滚动内容区 -->
+        <div class="w-1/2 p-6">
+            <div class="h-screen flex flex-col justify-center p-6" data-section="1">
+                <h3 class="text-3xl font-bold mb-6 premium-text" data-text="专业级输出">专业级输出</h3>
+                <p class="text-gray-300 text-lg mb-8">
+                    VIDAI 生成的视频内容达到专业水准，支持4K分辨率输出，色彩还原度高，细节表现丰富，满足商业级制作需求。
+                </p>
+                <button class="px-6 py-3 bg-gold text-dark font-semibold rounded-full hover:shadow-gold-lg transition-all duration-300">
+                    查看作品
+                </button>
+            </div>
+          
+            <div class="h-screen flex flex-col justify-center p-6" data-section="2">
+                <h3 class="text-3xl font-bold mb-6 premium-text" data-text="丰富的风格选择">丰富的风格选择</h3>
+                <p class="text-gray-300 text-lg mb-8">
+                    提供多种预设风格，从电影级大片到简约商务风格，从复古胶片到未来科技感，满足不同场景和主题需求。
+                </p>
+                <button class="px-6 py-3 bg-gold text-dark font-semibold rounded-full hover:shadow-gold-lg transition-all duration-300">
+                    探索风格
+                </button>
+            </div>
+          
+            <div class="h-screen flex flex-col justify-center p-6" data-section="3">
+                <h3 class="text-3xl font-bold mb-6 premium-text" data-text="高效工作流">高效工作流</h3>
+                <p class="text-gray-300 text-lg mb-8">
+                    简化视频制作流程，从创意构思到成品输出，大幅缩短制作时间，提高工作效率，降低制作成本。
+                </p>
+                <button class="px-6 py-3 bg-gold text-dark font-semibold rounded-full hover:shadow-gold-lg transition-all duration-300">
+                    了解工作流
+                </button>
+            </div>
+        </div>
+
+        <!-- 右侧固定内容区 -->
+        <div class="w-1/2 sticky top-0 h-screen overflow-hidden">
+            <img src="https://p26-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/f902d413d9964163ad13a21760f8afe2~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=20260508163616328ED7BE9C769C6DB0AA&rrcfp=f06b921b&x-expires=1780821452&x-signature=VsQSTC595Dnz48dNs%2FbwymRvBrM%3D" 
+                 alt="专业级输出" 
+                 class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000 fixed-image" 
+                 data-image="1">
+            <img src="https://p6-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/de41d0f17c7048ffa0f9bf836b12d8c3~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=20260508163616328ED7BE9C769C6DB0AA&rrcfp=f06b921b&x-expires=1780821412&x-signature=IrSzHSMowOH4VCpwL9oX4QRHodk%3D" 
+                 alt="丰富的风格选择" 
+                 class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000 fixed-image" 
+                 data-image="2">
+            <img src="https://p6-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/c1d379406d6946dcb58cff90173c3f6a~tplv-a9rns2rl98-image.image?lk3s=8e244e95&rcl=20260508163616328ED7BE9C769C6DB0AA&rrcfp=f06b921b&x-expires=1780821506&x-signature=7JKWD2cXXzzEaV6ZdEHqMS2Kk4U%3D" 
+                 alt="高效工作流" 
+                 class="absolute inset-0 w-full h-full object-cover opacity-0 transition-opacity duration-1000 fixed-image" 
+                 data-image="3">
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark py-8">
+        <div class="container mx-auto px-6">
+            <div class="text-center py-8">
+                <p class="text-gray-400">&copy; 2026 VIDAI. 简单、强大的AI视频生成平台</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+                const rect = viewport.getBoundingClientRect();
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                // 计算鼠标在世界坐标系中的位置
+                const worldRect = world.getBoundingClientRect();
+                const worldX = mouseX - worldRect.left;
+                const worldY = mouseY - worldRect.top;
+                
+                // 计算缩放前的鼠标位置（相对于世界原点）
+                const prevMouseX = worldX / scale;
+                const prevMouseY = worldY / scale;
+                
+                // 计算缩放后的鼠标位置（相对于世界原点）
+                const newMouseX = worldX / newScale;
+                const newMouseY = worldY / newScale;
+                
+                // 计算需要的位移补偿
+                const translateX = newMouseX - prevMouseX;
+                const translateY = newMouseY - prevMouseY;
+                
+                // 更新缩放和位置
+                scale = newScale;
+                
+                const currentTransform = world.style.transform;
+                const translateMatch = currentTransform.match(/translate\(([^,]+),\s*([^)]+)\)/);
+                
+                let currentTranslateX = 0, currentTranslateY = 0;
+                if (translateMatch) {
+                    currentTranslateX = parseFloat(translateMatch[1]);
+                    currentTranslateY = parseFloat(translateMatch[2]);
+                }
+                
+                world.style.transform = `translate(${currentTranslateX + translateX}px, ${currentTranslateY + translateY}px) scale(${scale})`;
+            });
+
+            // 初始化GSAP动画
+            if (typeof gsap !== 'undefined') {
+                // 页面加载动画
+                gsap.from('nav', { y: -100, opacity: 0, duration: 1, ease: 'power3.out' });
+                gsap.from('h1', { y: 50, opacity: 0, duration: 1, delay: 0.3, ease: 'power3.out' });
+                gsap.from('p', { y: 30, opacity: 0, duration: 1, delay: 0.6, ease: 'power3.out' });
+                gsap.from('button', { y: 20, opacity: 0, duration: 1, delay: 0.9, ease: 'power3.out' });
+
+                // 功能卡片动画
+                gsap.utils.toArray('.feature-card').forEach((card, i) => {
+                    gsap.from(card, {
+                        y: 50,
+                        opacity: 0,
+                        duration: 0.8,
+                        delay: 0.2 * i,
+                        scrollTrigger: {
+                            trigger: card,
+                            start: 'top 80%',
+                            toggleActions: 'play none none none'
+                        }
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+                                <span class="text-sm text-gold">98%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gold h-2 rounded-full" style="width: 98%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Claude 3 Opus -->
+                <div class="model-card glass-effect rounded-xl p-8 golden-border">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center">
+                            <i class="fa fa-brain text-xl text-dark"></i>
+                        </div>
+                        <span class="px-3 py-1 bg-green-500 text-white text-sm rounded-full">已接入</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-gold">Claude 3 Opus</h3>
+                    <p class="text-gray-300 mb-6">
+                        Anthropic最新的AI模型，具有出色的上下文理解和生成能力，为复杂视频创作提供支持。
+                    </p>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-400">响应速度</span>
+                                <span class="text-sm text-gold">92%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gold h-2 rounded-full" style="width: 92%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-400">准确率</span>
+                                <span class="text-sm text-gold">97%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gold h-2 rounded-full" style="width: 97%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gemini Pro -->
+                <div class="model-card glass-effect rounded-xl p-8 golden-border">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center">
+                            <i class="fa fa-brain text-xl text-dark"></i>
+                        </div>
+                        <span class="px-3 py-1 bg-green-500 text-white text-sm rounded-full">已接入</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-gold">Gemini Pro</h3>
+                    <p class="text-gray-300 mb-6">
+                        Google的先进AI模型，擅长多模态理解和生成，为视频内容提供丰富的创意可能性。
+                    </p>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-400">响应速度</span>
+                                <span class="text-sm text-gold">94%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gold h-2 rounded-full" style="width: 94%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-400">准确率</span>
+                                <span class="text-sm text-gold">96%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gold h-2 rounded-full" style="width: 96%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DALL-E 3 -->
+                <div class="model-card glass-effect rounded-xl p-8 golden-border">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center">
+                            <i class="fa fa-image text-xl text-dark"></i>
+                        </div>
+                        <span class="px-3 py-1 bg-green-500 text-white text-sm rounded-full">已接入</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-gold">DALL-E 3</h3>
+                    <p class="text-gray-300 mb-6">
+                        OpenAI的先进图像生成模型，为视频提供高质量的视觉元素和场景设计。
+                    </p>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-400">生成质量</span>
+                                <span class="text-sm text-gold">98%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gold h-2 rounded-full" style="width: 98%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-400">创意表现</span>
+                                <span class="text-sm text-gold">99%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gold h-2 rounded-full" style="width: 99%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Midjourney -->
+                <div class="model-card glass-effect rounded-xl p-8 golden-border">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center">
+                            <i class="fa fa-image text-xl text-dark"></i>
+                        </div>
+                        <span class="px-3 py-1 bg-green-500 text-white text-sm rounded-full">已接入</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-gold">Midjourney</h3>
+                    <p class="text-gray-300 mb-6">
+                        知名的AI图像生成工具，以其艺术表现力和创意风格著称，为视频提供独特的视觉风格。
+                    </p>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-400">艺术表现</span>
+                                <span class="text-sm text-gold">99%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gold h-2 rounded-full" style="width: 99%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-400">风格多样性</span>
+                                <span class="text-sm text-gold">97%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gold h-2 rounded-full" style="width: 97%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Stable Diffusion -->
+                <div class="model-card glass-effect rounded-xl p-8 golden-border">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="w-12 h-12 bg-gold rounded-full flex items-center justify-center">
+                            <i class="fa fa-image text-xl text-dark"></i>
+                        </div>
+                        <span class="px-3 py-1 bg-green-500 text-white text-sm rounded-full">已接入</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-gold">Stable Diffusion</h3>
+                    <p class="text-gray-300 mb-6">
+                        开源的AI图像生成模型，具有高度的可定制性和灵活性，为视频创作提供多样化选择。
+                    </p>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-400">定制性</span>
+                                <span class="text-sm text-gold">98%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gold h-2 rounded-full" style="width: 98%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-400">开源支持</span>
+                                <span class="text-sm text-gold">100%</span>
+                            </div>
+                            <div class="w-full bg-gray-700 rounded-full h-2">
+                                <div class="bg-gold h-2 rounded-full" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系我们区域 -->
+    <section id="contact" class="py-24 bg-gradient-dark">
+        <div class="container mx-auto px-6">
+            <div class="max-w-4xl mx-auto glass-effect rounded-2xl p-10 golden-border">
+                <div class="text-center mb-10">
+                    <h2 class="text-4xl font-bold mb-6">
+                        <span class="premium-text" data-text="联系我们">联系我们</span>
+                    </h2>
+                    <p class="text-xl text-gray-300">
+                        有任何问题或建议？请随时与我们联系
+                    </p>
+                </div>
+                
+                <form class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-300 mb-2">姓名</label>
+                            <input type="text" id="name" name="name" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold text-white">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-300 mb-2">邮箱</label>
+                            <input type="email" id="email" name="email" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold text-white">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="subject" class="block text-sm font-medium text-gray-300 mb-2">主题</label>
+                        <input type="text" id="subject" name="subject" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold text-white">
+                    </div>
+                    
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-gray-300 mb-2">消息</label>
+                        <textarea id="message" name="message" rows="5" class="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gold text-white"></textarea>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="submit" class="px-8 py-4 bg-gold text-dark font-semibold rounded-full hover:shadow-gold-lg transition-all duration-300 text-lg">
+                            发送消息
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div>
+                    <a href="#" class="text-2xl font-bold text-gold mb-6 inline-block">
+                        <span class="premium-text" data-text="VIDAI">VIDAI</span>
+                    </a>
+                    <p class="text-gray-400 mb-6">
+                        高端AI视频生成平台，释放创意无限可能。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-gold transition-colors">
+                            <i class="fa fa-facebook"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-gold transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-gold transition-colors">
+                            <i class="fa fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-gold transition-colors">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gold mb-6">产品</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors">功能特性</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors">AI模型</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors">定价方案</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors">更新日志</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gold mb-6">资源</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors">帮助中心</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors">教程指南</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors">API文档</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors">社区论坛</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold text-gold mb-6">公司</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors">关于我们</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors">联系我们</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors">隐私政策</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-gold transition-colors">服务条款</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center">
+                <p class="text-gray-500">© 2026 VIDAI. 保留所有权利。</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 灵动岛 -->
+    <div class="fixed bottom-8 left-0 right-0 flex justify-center z-50 transition-transform duration-500" id="dynamic-island-container">
+        <div class="flex items-center justify-between px-6 py-3 rounded-full bg-[rgba(66,66,66,0.7)] backdrop-blur-md transition-all duration-300 dynamic-island" id="dynamic-island">
+            <span class="text-white mr-3 transition-all duration-300" id="island-text">探索功能</span>
+            <div class="flex items-center justify-center w-6 h-6 rounded-full bg-gold text-dark transition-all duration-300">
+                <i class="fa fa-arrow-up"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 抽屉式详情 - 文字生视频 -->
+    <div id="textToVideoDetails" class="fixed inset-0 z-50 invisible">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300 drawer-backdrop"></div>
+        <div class="absolute bottom-0 left-0 w-full h-[90vh] bg-dark rounded-t-2xl transform translate-y-full transition-transform duration-500 ease-out drawer">
+            <button class="absolute right-4 top-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white z-10">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <div class="h-full overflow-y-auto px-6 py-12">
+                <h2 class="text-3xl font-bold mb-6 premium-text" data-text="文字生视频">文字生视频</h2>
+                <p class="mb-6 text-gray-300">
+                    文字生视频是VIDAI最强大的功能之一，只需输入详细的文字描述，AI就能理解您的创意并生成相应的视频内容。
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-gold">核心特性</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>支持多语言文本输入，包括中文、英文、日文等</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>理解复杂的场景描述和人物动作指令</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>自动生成符合描述的背景音乐和音效</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>支持调整视频长度、分辨率和风格</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-gold">使用场景</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>创意广告和营销视频制作</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>电影和动画概念预告片</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>教育培训内容可视化</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>社交媒体创意内容</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gold">使用示例</h3>
+                    <div class="bg-gray-800 rounded-lg p-6">
+                        <p class="text-gray-300 mb-4">输入描述：</p>
+                        <div class="bg-gray-900 rounded p-4 text-white mb-6">
+                            "一个未来城市的日落场景，高楼大厦之间有飞行汽车穿梭，天空呈现出紫色和橙色的渐变，远处有一座发光的塔，镜头缓慢推进..."
+                        </div>
+                        <p class="text-gray-300 mb-4">生成结果：</p>
+                        <div class="aspect-w-16 aspect-h-9 bg-gray-900 rounded-lg flex items-center justify-center">
+                            <span class="text-gray-400">视频预览区域</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="px-8 py-4 bg-gold text-dark font-semibold rounded-full hover:shadow-gold-lg transition-all duration-300 text-lg">
+                    立即体验文字生视频
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 抽屉式详情 - 图片生视频 -->
+    <div id="imageToVideoDetails" class="fixed inset-0 z-50 invisible">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300 drawer-backdrop"></div>
+        <div class="absolute bottom-0 left-0 w-full h-[90vh] bg-dark rounded-t-2xl transform translate-y-full transition-transform duration-500 ease-out drawer">
+            <button class="absolute right-4 top-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white z-10">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <div class="h-full overflow-y-auto px-6 py-12">
+                <h2 class="text-3xl font-bold mb-6 premium-text" data-text="图片生视频">图片生视频</h2>
+                <p class="mb-6 text-gray-300">
+                    图片生视频功能让您的静态图像焕发新生，AI将分析图片内容并生成连贯的视频序列，为您的照片注入动态生命力。
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-gold">核心特性</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>支持JPG、PNG、WEBP等多种图片格式</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>智能分析图像内容和深度信息</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>生成自然的相机运动和转场效果</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>支持批量处理多张图片</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-gold">使用场景</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>照片集动态展示</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>产品图片动态化展示</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>艺术作品动态呈现</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>房地产和室内设计展示</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gold">使用示例</h3>
+                    <div class="bg-gray-800 rounded-lg p-6">
+                        <p class="text-gray-300 mb-4">上传图片：</p>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-gray-900 rounded p-4 flex items-center justify-center">
+                                <span class="text-gray-400">图片预览1</span>
+                            </div>
+                            <div class="bg-gray-900 rounded p-4 flex items-center justify-center">
+                                <span class="text-gray-400">图片预览2</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">生成结果：</p>
+                        <div class="aspect-w-16 aspect-h-9 bg-gray-900 rounded-lg flex items-center justify-center">
+                            <span class="text-gray-400">视频预览区域</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="px-8 py-4 bg-gold text-dark font-semibold rounded-full hover:shadow-gold-lg transition-all duration-300 text-lg">
+                    立即体验图片生视频
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 抽屉式详情 - 首尾帧生视频 -->
+    <div id="frameToVideoDetails" class="fixed inset-0 z-50 invisible">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300 drawer-backdrop"></div>
+        <div class="absolute bottom-0 left-0 w-full h-[90vh] bg-dark rounded-t-2xl transform translate-y-full transition-transform duration-500 ease-out drawer">
+            <button class="absolute right-4 top-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white z-10">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <div class="h-full overflow-y-auto px-6 py-12">
+                <h2 class="text-3xl font-bold mb-6 premium-text" data-text="首尾帧生视频">首尾帧生视频</h2>
+                <p class="mb-6 text-gray-300">
+                    首尾帧生视频功能让您通过指定开始和结束画面，AI将智能生成中间过渡内容，创建完整的视频叙事。
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-gold">核心特性</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>智能分析首尾帧内容和风格</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>生成自然流畅的过渡效果</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>支持调整过渡时长和风格</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>自动匹配色彩和光照条件</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-gold">使用场景</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>产品转变和演化展示</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>时间流逝和季节变化</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>创意转场和视觉效果</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>故事板可视化</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gold">使用示例</h3>
+                    <div class="bg-gray-800 rounded-lg p-6">
+                        <p class="text-gray-300 mb-4">首尾帧输入：</p>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-gray-900 rounded p-4 flex items-center justify-center">
+                                <span class="text-gray-400">开始帧</span>
+                            </div>
+                            <div class="bg-gray-900 rounded p-4 flex items-center justify-center">
+                                <span class="text-gray-400">结束帧</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">生成结果：</p>
+                        <div class="aspect-w-16 aspect-h-9 bg-gray-900 rounded-lg flex items-center justify-center">
+                            <span class="text-gray-400">视频预览区域</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="px-8 py-4 bg-gold text-dark font-semibold rounded-full hover:shadow-gold-lg transition-all duration-300 text-lg">
+                    立即体验首尾帧生视频
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 抽屉式详情 - 动作捕捉生视频 -->
+    <div id="motionToVideoDetails" class="fixed inset-0 z-50 invisible">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300 drawer-backdrop"></div>
+        <div class="absolute bottom-0 left-0 w-full h-[90vh] bg-dark rounded-t-2xl transform translate-y-full transition-transform duration-500 ease-out drawer">
+            <button class="absolute right-4 top-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white z-10">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <div class="h-full overflow-y-auto px-6 py-12">
+                <h2 class="text-3xl font-bold mb-6 premium-text" data-text="动作捕捉生视频">动作捕捉生视频</h2>
+                <p class="mb-6 text-gray-300">
+                    动作捕捉生视频功能让您上传动作捕捉数据，AI将生成匹配的视频内容，实现精准的动作还原和创意表达。
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-gold">核心特性</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>支持多种动作捕捉数据格式</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>精确还原复杂动作和表情</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>提供多种角色和场景选择</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>支持实时预览和调整</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-gold">使用场景</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>动画和游戏角色动画制作</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>舞蹈和运动教学视频</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>虚拟人物表演</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>动作分析和演示</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gold">使用示例</h3>
+                    <div class="bg-gray-800 rounded-lg p-6">
+                        <p class="text-gray-300 mb-4">动作捕捉数据：</p>
+                        <div class="bg-gray-900 rounded p-4 mb-6 flex items-center justify-center">
+                            <span class="text-gray-400">动作捕捉数据预览</span>
+                        </div>
+                        <p class="text-gray-300 mb-4">生成结果：</p>
+                        <div class="aspect-w-16 aspect-h-9 bg-gray-900 rounded-lg flex items-center justify-center">
+                            <span class="text-gray-400">视频预览区域</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="px-8 py-4 bg-gold text-dark font-semibold rounded-full hover:shadow-gold-lg transition-all duration-300 text-lg">
+                    立即体验动作捕捉生视频
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 抽屉式详情 - 参考图生成视频 -->
+    <div id="referenceToVideoDetails" class="fixed inset-0 z-50 invisible">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300 drawer-backdrop"></div>
+        <div class="absolute bottom-0 left-0 w-full h-[90vh] bg-dark rounded-t-2xl transform translate-y-full transition-transform duration-500 ease-out drawer">
+            <button class="absolute right-4 top-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white z-10">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <div class="h-full overflow-y-auto px-6 py-12">
+                <h2 class="text-3xl font-bold mb-6 premium-text" data-text="参考图生成视频">参考图生成视频</h2>
+                <p class="mb-6 text-gray-300">
+                    参考图生成视频功能让您上传参考图片并添加提示词，AI将生成风格一致的视频内容，保持视觉统一性。
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-gold">核心特性</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>精确分析参考图的风格和色彩</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>支持多张参考图混合风格</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>文本提示词引导内容生成</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>支持风格强度调节</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-gold">使用场景</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>品牌风格统一的营销视频</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>艺术风格视频创作</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>产品展示视频</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-play-circle text-gold mt-1 mr-3"></i>
+                                <span>创意内容制作</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gold">使用示例</h3>
+                    <div class="bg-gray-800 rounded-lg p-6">
+                        <p class="text-gray-300 mb-4">参考图片：</p>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-gray-900 rounded p-4 flex items-center justify-center">
+                                <span class="text-gray-400">参考图1</span>
+                            </div>
+                            <div class="bg-gray-900 rounded p-4 flex items-center justify-center">
+                                <span class="text-gray-400">参考图2</span>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 mb-4">提示词：</p>
+                        <div class="bg-gray-900 rounded p-4 text-white mb-6">
+                            "赛博朋克风格的未来城市夜景，霓虹灯闪烁，雨水打湿的街道，远处有巨大的全息广告牌..."
+                        </div>
+                        <p class="text-gray-300 mb-4">生成结果：</p>
+                        <div class="aspect-w-16 aspect-h-9 bg-gray-900 rounded-lg flex items-center justify-center">
+                            <span class="text-gray-400">视频预览区域</span>
+                        </div>
+                    </div>
+                </div>
+                <button class="px-8 py-4 bg-gold text-dark font-semibold rounded-full hover:shadow-gold-lg transition-all duration-300 text-lg">
+                    立即体验参考图生成视频
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 抽屉式详情 - AI模型接入 -->
+    <div id="aiModelDetails" class="fixed inset-0 z-50 invisible">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm opacity-0 transition-opacity duration-300 drawer-backdrop"></div>
+        <div class="absolute bottom-0 left-0 w-full h-[90vh] bg-dark rounded-t-2xl transform translate-y-full transition-transform duration-500 ease-out drawer">
+            <button class="absolute right-4 top-4 w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white z-10">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <div class="h-full overflow-y-auto px-6 py-12">
+                <h2 class="text-3xl font-bold mb-6 premium-text" data-text="AI模型接入">AI模型接入</h2>
+                <p class="mb-6 text-gray-300">
+                    VIDAI 支持接入多种免费AI大模型，为您的创作提供强大支持，扩展创作能力。
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-gold">核心特性</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>支持多种主流AI模型接入</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>统一的API接口，简化开发</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>智能负载均衡，优化性能</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-gold mt-1 mr-3"></i>
+                                <span>实时监控和统计分析</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4 text-gold">支持的模型类型</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-brain text-gold mt-1 mr-3"></i>
+                                <span>大语言模型（LLM）</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-image text-gold mt-1 mr-3"></i>
+                                <span>图像生成模型</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-video-camera text-gold mt-1 mr-3"></i>
+                                <span>视频生成模型</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-music text-gold mt-1 mr-3"></i>
+                                <span>音频生成模型</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mb-8">
+                    <h3 class="text-xl font-semibold mb-4 text-gold">接入流程</h3>
+                    <div class="bg-gray-800 rounded-lg p-6">
+                        <ol class="space-y-4 text-gray-300">
+                            <li class="flex items-start">
+                                <span class="bg-gold text-dark rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5">1</span>
+                                <span>注册VIDAI开发者账号</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-gold text-dark rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5">2</span>
+                                <span>创建API密钥和应用</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-gold text-dark rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5">3</span>
+                                <span>选择需要接入的AI模型</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-gold text-dark rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5">4</span>
+                                <span>配置模型参数和权限</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="bg-gold text-dark rounded-full w-6 h-6 flex items-center justify-center mr-3 mt-0.5">5</span>
+                                <span>通过API调用模型服务</span>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+                <button class="px-8 py-4 bg-gold text-dark font-semibold rounded-full hover:shadow-gold-lg transition-all duration-300 text-lg">
+                    查看API文档
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 初始化GSAP ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // 为高级文字设置数据属性
+        document.querySelectorAll('.premium-text').forEach(el => {
+            el.setAttribute('data-text', el.textContent);
+        });
+        
+        // 灵动岛交互逻辑
+        const islandContainer = document.getElementById('dynamic-island-container');
+        const islandText = document.getElementById('island-text');
+        const island = document.getElementById('dynamic-island');
+        const islandIcon = island.querySelector('i');
+        
+        function updateIsland(newText, icon = 'fa-arrow-up') {
+            // 文字变化动画
+            islandText.style.opacity = '0';
+            islandText.style.transform = 'scale(0.8)';
+            islandIcon.className = `fa ${icon}`;
+        
+            setTimeout(() => {
+                islandText.textContent = newText;
+                islandText.style.opacity = '1';
+                islandText.style.transform = 'scale(1)';
+            
+                // 根据文本长度调整宽度
+                const baseWidth = 120; // 最小宽度
+                const textWidth = islandText.offsetWidth;
+                island.style.width = `${Math.max(baseWidth, textWidth + 70)}px`;
+            }, 300);
+        }
+        
+        // 监听滚动以显示/隐藏/更新灵动岛
+        window.addEventListener('scroll', () => {
+            const scrollPosition = window.scrollY;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            
+            // 根据滚动位置更新灵动岛
+            if (scrollPosition < windowHeight) {
+                updateIsland('探索功能', 'fa-arrow-down');
+            } else if (scrollPosition < windowHeight * 2) {
+                updateIsland('功能特性', 'fa-cogs');
+            } else if (scrollPosition < windowHeight * 3) {
+                updateIsland('无限画布', 'fa-object-group');
+            } else if (scrollPosition < windowHeight * 4) {
+                updateIsland('作品展示', 'fa-play-circle');
+            } else if (scrollPosition < windowHeight * 5) {
+                updateIsland('AI模型', 'fa-brain');
+            } else if (scrollPosition > documentHeight - windowHeight * 1.5) {
+                updateIsland('联系我们', 'fa-envelope');
+            }
+            
+            // 显示/隐藏灵动岛
+            if (scrollPosition > 100) {
+                islandContainer.style.transform = 'translateY(0)';
+            } else {
+                islandContainer.style.transform = 'translateY(100px)';
+            }
+        });
+        
+        // 灵动岛点击事件
+        island.addEventListener('click', () => {
+            const scrollPosition = window.scrollY;
+            const windowHeight = window.innerHeight;
+            
+            if (scrollPosition < windowHeight) {
+                window.scrollTo({
+                    top: windowHeight,
+                    behavior: 'smooth'
+                });
+            } else if (scrollPosition < windowHeight * 2) {
+                window.scrollTo({
+                    top: windowHeight * 2,
+                    behavior: 'smooth'
+                });
+            } else if (scrollPosition < windowHeight * 3) {
+                window.scrollTo({
+                    top: windowHeight * 3,
+                    behavior: 'smooth'
+                });
+            } else if (scrollPosition < windowHeight * 4) {
+                window.scrollTo({
+                    top: windowHeight * 4,
+                    behavior: 'smooth'
+                });
+            } else {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        });
+        
+        // 滚动转场效果
+        const container = document.getElementById('transition-container');
+        const image1 = document.getElementById('image1');
+        const image2 = document.getElementById('image2');
+        const transitionLine = document.getElementById('transition-line');
+        
+        window.addEventListener('scroll', () => {
+            // 获取容器相对于视口的位置
+            const rect = container.getBoundingClientRect();
+            // 计算容器顶部超出屏幕的距离
+            const scrolledDistance = Math.max(0, -rect.top);
+            // 计算总的滚动距离
+            const totalScrollDistance = container.offsetHeight - window.innerHeight;
+            // 计算滚动比例 (0-1)
+            const scrollProgress = Math.min(1, scrolledDistance / totalScrollDistance);
+        
+            // 第一次转场 (0-0.5进度)
+            if (scrollProgress <= 0.5) {
+                const firstTransitionProgress = scrollProgress * 2; // 0-1
+                image1.style.width = `${(1 - firstTransitionProgress) * 100}%`;
+                transitionLine.style.left = `${(1 - firstTransitionProgress) * 100}%`;
+            } 
+            // 第二次转场 (0.5-1进度)
+            else {
+                image1.style.width = '0%';
+                const secondTransitionProgress = (scrollProgress - 0.5) * 2; // 0-1
+                image2.style.width = `${(1 - secondTransitionProgress) * 100}%`;
+                transitionLine.style.left = `${(1 - secondTransitionProgress) * 100}%`;
+            }
+        });
+        
+        // 固定与滚动混合布局
+        const sections = document.querySelectorAll('[data-section]');
+        const images = document.querySelectorAll('.fixed-image');
+        
+        // 监听滚动更新图片
+        window.addEventListener('scroll', () => {
+            sections.forEach(section => {
+                const rect = section.getBoundingClientRect();
+                const sectionId = section.dataset.section;
+            
+                // 当部分在视口中央时
+                if (rect.top < window.innerHeight/2 && rect.bottom > window.innerHeight/2) {
+                    // 更新对应图片
+                    images.forEach(img => {
+                        if (img.dataset.image === sectionId) {
+                            img.style.opacity = '1';
+                        } else {
+                            img.style.opacity = '0';
+                        }
+                    });
+                }
+            });
+        });
+        
+        // 抽屉式详情交互
+        function openDrawer(id) {
+            const drawer = document.getElementById(id);
+            const backdrop = drawer.querySelector('.drawer-backdrop');
+            const content = drawer.querySelector('.drawer');
+        
+            // 显示抽屉
+            drawer.classList.remove('invisible');
+            backdrop.classList.add('opacity-100');
+            content.classList.remove('translate-y-full');
+        
+            // 禁用背景滚动
+            document.body.style.overflow = 'hidden';
+        
+            // 绑定关闭事件
+            backdrop.onclick = () => closeDrawer(id);
+            drawer.querySelector('button').onclick = () => closeDrawer(id);
+        }
+        
+        function closeDrawer(id) {
+            const drawer = document.getElementById(id);
+            const backdrop = drawer.querySelector('.drawer-backdrop');
+            const content = drawer.querySelector('.drawer');
+        
+            // 隐藏抽屉
+            backdrop.classList.remove('opacity-100');
+            content.classList.add('translate-y-full');
+        
+            // 延迟后完全隐藏
+            setTimeout(() => {
+                drawer.classList.add('invisible');
+                document.body.style.overflow = '';
+            }, 500);
+        }
+        
+        // 无限画布交互逻辑
+        const viewport = document.getElementById('viewport');
+        const world = document.getElementById('world');
+        const scaleDisplay = document.getElementById('scale-display');
+        const scaleSlider = document.getElementById('scale-slider');
+        const canvasInfo = document.getElementById('canvas-info');
+        
+        // 画布状态
+        let state = {
+            x: 0,
+            y: 0,
+            scale: 1,
+            isDragging: false,
+            startX: 0,
+            startY: 0,
+            initialX: 0,
+            initialY: 0
+        };
+        
+        // 更新画布变换
+        function updateTransform() {
+            world.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+            scaleDisplay.textContent = `${Math.round(state.scale * 100)}%`;
+            scaleSlider.value = Math.round(state.scale * 100);
+            canvasInfo.textContent = `坐标: (${Math.round(state.x)}, ${Math.round(state.y)}) | 缩放: ${Math.round(state.scale * 100)}%`;
+        }
+        
+        // 鼠标按下事件
+        viewport.addEventListener('mousedown', (e) => {
+            if (e.button === 0) { // 左键
+                state.isDragging = true;
+                state.startX = e.clientX;
+                state.startY = e.clientY;
+                state.initialX = state.x;
+                state.initialY = state.y;
+                viewport.style.cursor = 'grabbing';
+            }
+        });
+        
+        // 鼠标移动事件
+        document.addEventListener('mousemove', (e) => {
+            if (state.isDragging) {
+                const deltaX = e.clientX - state.startX;
+                const deltaY = e.clientY - state.startY;
+                state.x = state.initialX + deltaX;
+                state.y = state.initialY + deltaY;
+                updateTransform();
+            }
+        });
+        
+        // 鼠标释放事件
+        document.addEventListener('mouseup', () => {
+            state.isDragging = false;
+            viewport.style.cursor = 'grab';
+        });
+        
+        // 鼠标离开事件
+        viewport.addEventListener('mouseleave', () => {
+            state.isDragging = false;
+            viewport.style.cursor = 'grab';
+        });
+        
+        // 滚轮缩放事件
+        viewport.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            
+            // 计算鼠标在视口中的位置
+            const rect = viewport.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            // 计算鼠标相对于世界原点的位置
+            const worldMouseX = (mouseX - state.x) / state.scale;
+            const worldMouseY = (mouseY - state.y) / state.scale;
+            
+            // 缩放因子
+            const zoomIntensity = 0.1;
+            const zoom = e.deltaY < 0 ? 1 + zoomIntensity : 1 - zoomIntensity;
+            
+            // 更新缩放
+            state.scale *= zoom;
+            state.scale = Math.max(0.1, Math.min(5, state.scale)); // 限制缩放范围
+            
+            // 调整位置以保持鼠标下的点不变
+            state.x = mouseX - worldMouseX * state.scale;
+            state.y = mouseY - worldMouseY * state.scale;
+            
+            updateTransform();
+        });
+        
+        // 缩放按钮事件
+        document.getElementById('zoom-in').addEventListener('click', () => {
+            state.scale *= 1.2;
+            state.scale = Math.min(5, state.scale);
+            updateTransform();
+        });
+        
+        document.getElementById('zoom-out').addEventListener('click', () => {
+            state.scale /= 1.2;
+            state.scale = Math.max(0.1, state.scale);
+            updateTransform();
+        });
+        
+        // 缩放滑块事件
+        scaleSlider.addEventListener('input', (e) => {
+            state.scale = parseInt(e.target.value) / 100;
+            updateTransform();
+        });
+        
+        // 方向按钮事件
+        document.querySelectorAll('[data-direction]').forEach(button => {
+            button.addEventListener('click', () => {
+                const direction = button.dataset.direction;
+                const moveAmount = 50 / state.scale; // 考虑缩放因子
+                
+                switch (direction) {
+                    case 'up':
+                        state.y -= moveAmount;
+                        break;
+                    case 'down':
+                        state.y += moveAmount;
+                        break;
+                    case 'left':
+                        state.x -= moveAmount;
+                        break;
+                    case 'right':
+                        state.x += moveAmount;
+                        break;
+                }
+                
+                updateTransform();
+            });
+        });
+        
+        // 重置视图按钮事件
+        document.getElementById('reset-view').addEventListener('click', () => {
+            state.x = 0;
+            state.y = 0;
+            state.scale = 1;
+            updateTransform();
+        });
+        
+        // 添加元素按钮事件
+        document.getElementById('add-text').addEventListener('click', () => {
+            const textElement = document.createElement('div');
+            textElement.className = 'absolute bg-white/10 p-4 rounded-lg border border-gold/30 cursor-move';
+            textElement.style.left = '50%';
+            textElement.style.top = '50%';
+            textElement.style.transform = 'translate(-50%, -50%)';
+            textElement.innerHTML = '<p class="text-white">双击编辑文本</p>';
+            
+            // 添加双击编辑功能
+            textElement.addEventListener('dblclick', () => {
+                const currentText = textElement.querySelector('p').textContent;
+                const newText = prompt('编辑文本:', currentText);
+                if (newText !== null) {
+                    textElement.querySelector('p').textContent = newText;
+                }
+            });
+            
+            // 添加拖拽功能
+            makeElementDraggable(textElement);
+            
+            world.appendChild(textElement);
+        });
+        
+        document.getElementById('add-image').addEventListener('click', () => {
+            const imageElement = document.createElement('div');
+            imageElement.className = 'absolute bg-white/10 p-4 rounded-lg border border-gold/30 cursor-move';
+            imageElement.style.left = '50%';
+            imageElement.style.top = '50%';
+            imageElement.style.transform = 'translate(-50%, -50%)';
+            imageElement.innerHTML = '<div class="w-32 h-24 bg-gray-700 rounded flex items-center justify-center"><i class="fa fa-image text-white text-2xl"></i></div>';
+            
+            // 添加拖拽功能
+            makeElementDraggable(imageElement);
+            
+            world.appendChild(imageElement);
+        });
+        
+        document.getElementById('add-shape').addEventListener('click', () => {
+            const shapeElement = document.createElement('div');
+            shapeElement.className = 'absolute cursor-move';
+            shapeElement.style.left = '50%';
+            shapeElement.style.top = '50%';
+            shapeElement.style.transform = 'translate(-50%, -50%)';
+            shapeElement.innerHTML = '<div class="w-24 h-24 bg-gold/20 border-2 border-gold rounded-lg"></div>';
+            
+            // 添加拖拽功能
+            makeElementDraggable(shapeElement);
+            
+            world.appendChild(shapeElement);
+        });
+        
+        document.getElementById('add-video').addEventListener('click', () => {
+            const videoElement = document.createElement('div');
+            videoElement.className = 'absolute bg-white/10 p-4 rounded-lg border border-gold/30 cursor-move';
+            videoElement.style.left = '50%';
+            videoElement.style.top = '50%';
+            videoElement.style.transform = 'translate(-50%, -50%)';
+            videoElement.innerHTML = '<div class="w-40 h-24 bg-gray-700 rounded flex items-center justify-center"><i class="fa fa-video-camera text-white text-2xl"></i></div>';
+            
+            // 添加拖拽功能
+            makeElementDraggable(videoElement);
+            
+            world.appendChild(videoElement);
+        });
+        
+        // AI生成按钮事件
+        document.getElementById('generate-image').addEventListener('click', () => {
+            const prompt = prompt('请输入图像描述:');
+            if (prompt) {
+                // 模拟AI生成过程
+                const loadingElement = document.createElement('div');
+                loadingElement.className = 'absolute bg-white/10 p-6 rounded-lg border border-gold/30';
+                loadingElement.style.left = '50%';
+                loadingElement.style.top = '50%';
+                loadingElement.style.transform = 'translate(-50%, -50%)';
+                loadingElement.innerHTML = `
+                    <div class="text-center">
+                        <div class="w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                        <p class="text-white">正在生成图像...</p>
+                    </div>
+                `;
+                world.appendChild(loadingElement);
+                
+                // 模拟API调用延迟
+                setTimeout(() => {
+                    world.removeChild(loadingElement);
+                    
+                    const generatedImage = document.createElement('div');
+                    generatedImage.className = 'absolute bg-white/10 p-4 rounded-lg border border-gold/30 cursor-move';
+                    generatedImage.style.left = '50%';
+                    generatedImage.style.top = '50%';
+                    generatedImage.style.transform = 'translate(-50%, -50%)';
+                    generatedImage.innerHTML = `
+                        <div class="text-center">
+                            <div class="w-40 h-30 bg-gray-700 rounded flex items-center justify-center mb-2">
+                                <i class="fa fa-image text-gold text-3xl"></i>
+                            </div>
+                            <p class="text-white text-sm">已生成: ${prompt.substring(0, 20)}...</p>
+                        </div>
+                    `;
+                    
+                    // 添加拖拽功能
+                    makeElementDraggable(generatedImage);
+                    
+                    world.appendChild(generatedImage);
+                }, 2000);
+            }
+        });
+        
+        document.getElementById('generate-video').addEventListener('click', () => {
+            const prompt = prompt('请输入视频描述:');
+            if (prompt) {
+                // 模拟AI生成过程
+                const loadingElement = document.createElement('div');
+                loadingElement.className = 'absolute bg-white/10 p-6 rounded-lg border border-gold/30';
+                loadingElement.style.left = '50%';
+                loadingElement.style.top = '50%';
+                loadingElement.style.transform = 'translate(-50%, -50%)';
+                loadingElement.innerHTML = `
+                    <div class="text-center">
+                        <div class="w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                        <p class="text-white">正在生成视频...</p>
+                    </div>
+                `;
+                world.appendChild(loadingElement);
+                
+                // 模拟API调用延迟
+                setTimeout(() => {
+                    world.removeChild(loadingElement);
+                    
+                    const generatedVideo = document.createElement('div');
+                    generatedVideo.className = 'absolute bg-white/10 p-4 rounded-lg border border-gold/30 cursor-move';
+                    generatedVideo.style.left = '50%';
+                    generatedVideo.style.top = '50%';
+                    generatedVideo.style.transform = 'translate(-50%, -50%)';
+                    generatedVideo.innerHTML = `
+                        <div class="text-center">
+                            <div class="w-48 h-32 bg-gray-700 rounded flex items-center justify-center mb-2">
+                                <i class="fa fa-film text-gold text-3xl"></i>
+                            </div>
+                            <p class="text-white text-sm">已生成: ${prompt.substring(0, 20)}...</p>
+                        </div>
+                    `;
+                    
+                    // 添加拖拽功能
+                    makeElementDraggable(generatedVideo);
+                    
+                    world.appendChild(generatedVideo);
+                }, 3000);
+            }
+        });
+        
+        document.getElementById('generate-audio').addEventListener('click', () => {
+            const prompt = prompt('请输入音频描述:');
+            if (prompt) {
+                // 模拟AI生成过程
+                const loadingElement = document.createElement('div');
+                loadingElement.className = 'absolute bg-white/10 p-6 rounded-lg border border-gold/30';
+                loadingElement.style.left = '50%';
+                loadingElement.style.top = '50%';
+                loadingElement.style.transform = 'translate(-50%, -50%)';
+                loadingElement.innerHTML = `
+                    <div class="text-center">
+                        <div class="w-12 h-12 border-4 border-gold border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                        <p class="text-white">正在生成音频...</p>
+                    </div>
+                `;
+                world.appendChild(loadingElement);
+                
+                // 模拟API调用延迟
+                setTimeout(() => {
+                    world.removeChild(loadingElement);
+                    
+                    const generatedAudio = document.createElement('div');
+                    generatedAudio.className = 'absolute bg-white/10 p-4 rounded-lg border border-gold/30 cursor-move';
+                    generatedAudio.style.left = '50%';
+                    generatedAudio.style.top = '50%';
+                    generatedAudio.style.transform = 'translate(-50%, -50%)';
+                    generatedAudio.innerHTML = `
+                        <div class="text-center">
+                            <div class="w-32 h-16 bg-gray-700 rounded flex items-center justify-center mb-2">
+                                <i class="fa fa-music text-gold text-2xl"></i>
+                            </div>
+                            <p class="text-white text-sm">已生成: ${prompt.substring(0, 20)}...</p>
+                        </div>
+                    `;
+                    
+                    // 添加拖拽功能
+                    makeElementDraggable(generatedAudio);
+                    
+                    world.appendChild(generatedAudio);
+                }, 1500);
+            }
+        });
+        
+        // 使元素可拖拽
+        function makeElementDraggable(element) {
+            let isDragging = false;
+            let startX, startY;
+            let initialX, initialY;
+            
+            element.addEventListener('mousedown', (e) => {
+                e.stopPropagation(); // 阻止事件冒泡
+                if (e.button === 0) {
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    // 获取元素当前位置
+                    const rect = element.getBoundingClientRect();
+                    const worldRect = world.getBoundingClientRect();
+                    
+                    // 计算元素在世界坐标系中的位置
+                    initialX = (rect.left - worldRect.left - state.x) / state.scale;
+                    initialY = (rect.top - worldRect.top - state.y) / state.scale;
+                    
+                    element.style.zIndex = '100';
+                }
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaX = (e.clientX - startX) / state.scale;
+                    const deltaY = (e.clientY - startY) / state.scale;
+                    
+                    const newX = initialX + deltaX;
+                    const newY = initialY + deltaY;
+                    
+                    element.style.left = `${newX}px`;
+                    element.style.top = `${newY}px`;
+                    element.style.transform = 'none';
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                if (isDragging) {
+                    isDragging = false;
+                    element.style.zIndex = '1';
+                }
+            });
+        }
+        
+        // 初始化画布
+        updateTransform();
+    </script>
+</body>
+</html>
